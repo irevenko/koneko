@@ -4,11 +4,8 @@
 
 # ToDo
 - [ ] command nyaa && sukebei (to select provider)
-- [ ] Search
-- [ ] Bookmarks
-- [ ] History
-- [ ] Help
-- [ ] Download torrent or open in other app (mark torrents like in gero)
+- [ ] Add bottom panel with help, bookmars, history (another screen)
+- [ ] Download torrent or open in other app (mark torrents like in gero) and hide torrent link
 - [ ] Simulate nyaa.si as much as possible
-    * [ ] Colors and theme
+    * [ ] Colors
     * [ ] Torrent description, comments, files
