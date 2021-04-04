@@ -99,7 +99,23 @@ func main() {
 	})
 
 	table.SetSelectedFunc(func(row int, column int) {
-		//a := table.GetCell(row, column)
+		torrent := table.GetCell(row, 5)
+		// handle green color
+		// create slice and store state of marked torrents
+		if torrent.Color == tcell.ColorBlue {
+			torrent.Color = tcell.ColorWhite
+		} else {
+			torrent.Color = tcell.ColorBlue
+		}
+
+	})
+
+	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyCtrlD {
+
+		}
+
+		return event
 	})
 
 	flex := tview.NewFlex().
@@ -113,7 +129,7 @@ func main() {
 func setTableData(table *tview.Table, data string) {
 	for row, line := range strings.Split(data, "\n") {
 		for column, cell := range strings.Split(line, "{}") {
-			textColor := tcell.ColorWhiteSmoke
+			textColor := tcell.ColorWhite
 			bgColor := tcell.ColorBlack
 			align := tview.AlignLeft
 
@@ -127,6 +143,10 @@ func setTableData(table *tview.Table, data string) {
 				textColor = tcell.ColorLightSalmon
 			} else if column == 4 {
 				textColor = tcell.ColorLightCyan
+			}
+
+			if strings.Contains(line, "trusted") && column == 5 {
+				textColor = tcell.ColorLightGreen
 			}
 
 			tableCell := tview.NewTableCell(cell).
@@ -162,10 +182,30 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 		t, _ := time.Parse(initialLayout, v.Date)
 		date := t.Format(dateLayout)
 
-		name := strings.Trim(v.Name, " ")
+		name := ""
+		if strings.HasPrefix(v.Name, "[") {
+			a := strings.Split(v.Name, "")
+			for i, v := range a {
+				if v == "[" {
+					a[i] = "{"
+				} else if v == "]" {
+					a[i] = "}"
+					break
+				}
+			}
+			str := strings.Join(a, "")
+			name = str
+		} else {
+			name = v.Name
+		}
+
+		trusted := ""
+		if v.IsTrusted == "Yes" {
+			trusted = "trusted"
+		}
 
 		//link := strings.Split(v.Link, "download/")
-		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + name + "\n"
+		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + name + "{}" + trusted + "\n"
 	}
 
 	return torrents
