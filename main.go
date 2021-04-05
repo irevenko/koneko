@@ -17,6 +17,7 @@ var query = ""
 var category = 0
 var filter = 0
 var sortBy = 0
+var markedTorrents []string
 
 var nyaaCategories = []string{
 	"All",
@@ -100,14 +101,20 @@ func main() {
 
 	table.SetSelectedFunc(func(row int, column int) {
 		torrent := table.GetCell(row, 5)
-		// handle green color
+		curColor := torrent.Color
 		// create slice and store state of marked torrents
-		if torrent.Color == tcell.ColorBlue {
-			torrent.Color = tcell.ColorWhite
-		} else {
+
+		if curColor == tcell.ColorLightGreen || curColor == tcell.ColorWhite {
 			torrent.Color = tcell.ColorBlue
 		}
 
+		if curColor == tcell.ColorBlue {
+			if strings.Contains(torrent.Text, "trusted torrent") {
+				torrent.Color = tcell.ColorLightGreen
+			} else {
+				torrent.Color = tcell.ColorWhite
+			}
+		}
 	})
 
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
@@ -145,7 +152,7 @@ func setTableData(table *tview.Table, data string) {
 				textColor = tcell.ColorLightCyan
 			}
 
-			if strings.Contains(line, "trusted") && column == 5 {
+			if strings.Contains(line, "(trusted torrent)") && column == 5 {
 				textColor = tcell.ColorLightGreen
 			}
 
@@ -183,29 +190,30 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 		date := t.Format(dateLayout)
 
 		name := ""
-		if strings.HasPrefix(v.Name, "[") {
-			a := strings.Split(v.Name, "")
-			for i, v := range a {
-				if v == "[" {
-					a[i] = "{"
-				} else if v == "]" {
-					a[i] = "}"
-					break
-				}
+		a := strings.Split(v.Name, "")
+		for i, v := range a {
+			if v == "[" {
+				a[i] = "("
+			} else if v == "]" {
+				a[i] = ")"
 			}
-			str := strings.Join(a, "")
-			name = str
-		} else {
-			name = v.Name
 		}
+		str := strings.Join(a, "")
+		name = str
 
-		trusted := ""
+		isTrusted := ""
 		if v.IsTrusted == "Yes" {
-			trusted = "trusted"
+			isTrusted = v.IsTrusted
 		}
 
 		//link := strings.Split(v.Link, "download/")
-		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + name + "{}" + trusted + "\n"
+		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + name
+
+		if isTrusted == "Yes" {
+			torrents += " (trusted torrent)"
+		}
+
+		torrents += "\n"
 	}
 
 	return torrents
