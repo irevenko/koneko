@@ -1,7 +1,10 @@
 package main
 
 import (
+	"io"
 	"log"
+	"net/http"
+	"os"
 	"strings"
 	"time"
 
@@ -17,7 +20,7 @@ var query = ""
 var category = 0
 var filter = 0
 var sortBy = 0
-var markedTorrents []string
+var markedTorrents []MarkedTorrent
 
 var nyaaCategories = []string{
 	"All",
@@ -101,25 +104,46 @@ func main() {
 
 	table.SetSelectedFunc(func(row int, column int) {
 		torrent := table.GetCell(row, 5)
+		link := table.GetCell(row, 6)
 		curColor := torrent.Color
-		// create slice and store state of marked torrents
 
-		if curColor == tcell.ColorLightGreen || curColor == tcell.ColorWhite {
+		if curColor == tcell.ColorGreen || curColor == tcell.ColorWhite {
 			torrent.Color = tcell.ColorBlue
+
+			if !sliceHas(markedTorrents, link.Text) {
+				markedTorrents = append(markedTorrents, MarkedTorrent{Name: torrent.Text, Link: link.Text})
+			}
 		}
 
 		if curColor == tcell.ColorBlue {
 			if strings.Contains(torrent.Text, "trusted torrent") {
-				torrent.Color = tcell.ColorLightGreen
+				torrent.Color = tcell.ColorGreen
 			} else {
 				torrent.Color = tcell.ColorWhite
 			}
+
+			markedTorrents = remove(markedTorrents, link.Text)
 		}
 	})
 
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlD {
+			downloadTorrents(markedTorrents)
+			rows := table.GetRowCount()
+			for i := 0; i < rows; i++ {
+				torrent := table.GetCell(i, 5)
+				link := table.GetCell(i, 6)
 
+				if torrent.Color == tcell.ColorBlue {
+					if strings.Contains(torrent.Text, "trusted torrent") {
+						torrent.Color = tcell.ColorGreen
+					} else {
+						torrent.Color = tcell.ColorWhite
+					}
+
+					markedTorrents = remove(markedTorrents, link.Text)
+				}
+			}
 		}
 
 		return event
@@ -143,17 +167,17 @@ func setTableData(table *tview.Table, data string) {
 			if column == 0 {
 				textColor = tcell.ColorYellow
 			} else if column == 1 {
-				textColor = tcell.ColorLightGreen
+				textColor = tcell.ColorGreen
 			} else if column == 2 {
 				textColor = tcell.ColorRed
 			} else if column == 3 {
-				textColor = tcell.ColorLightSalmon
+				textColor = tcell.ColorPurple
 			} else if column == 4 {
 				textColor = tcell.ColorLightCyan
 			}
 
 			if strings.Contains(line, "(trusted torrent)") && column == 5 {
-				textColor = tcell.ColorLightGreen
+				textColor = tcell.ColorGreen
 			}
 
 			tableCell := tview.NewTableCell(cell).
@@ -182,6 +206,10 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 		log.Fatal(err)
 	}
 
+	if len(t) == 0 {
+		return "No results found"
+	}
+
 	initialLayout := "Mon, 02 Jan 2006 15:04:05 -0700"
 	dateLayout := "2006-01-02"
 
@@ -206,15 +234,69 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 			isTrusted = v.IsTrusted
 		}
 
-		//link := strings.Split(v.Link, "download/")
 		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + name
 
 		if isTrusted == "Yes" {
 			torrents += " (trusted torrent)"
 		}
 
+		torrents += "{}" + v.Link
+
 		torrents += "\n"
 	}
 
 	return torrents
+}
+
+func sliceHas(s []MarkedTorrent, e string) bool {
+	for _, v := range s {
+		if v.Link == e {
+			return true
+		}
+	}
+	return false
+}
+
+func remove(s []MarkedTorrent, e string) []MarkedTorrent {
+	for i, v := range s {
+		if v.Link == e {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
+}
+
+func downloadTorrents(torrents []MarkedTorrent) error {
+	for _, v := range torrents {
+		res, err := http.Get(v.Link)
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer res.Body.Close()
+
+		var fileName string
+		if len(v.Name) > 200 {
+			fileName = v.Name[:200]
+		} else {
+			fileName = v.Name
+		}
+
+		out, err := os.Create(string(fileName) + ".torrent")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer out.Close()
+
+		_, err = io.Copy(out, res.Body)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	return nil
+}
+
+type MarkedTorrent struct {
+	Name string
+	Link string
 }
