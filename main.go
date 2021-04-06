@@ -83,12 +83,14 @@ func main() {
 			sortBy = optionIndex
 		}).
 		AddButton("Search", func() {
+			UnmarkAll(table)
 			c := h.ConvertCategory(category)
 			s := h.ConvertSort(sortBy)
 			f := h.ConvertFilter(filter)
 			torrents := fetchTorrents("nyaa", query, c, s, f)
 			setTableData(table, torrents[:len(torrents)-1]) // remove last \n
 			app.SetFocus(table)
+			table.ScrollToBeginning()
 		})
 
 	form.SetBorder(true)
@@ -107,43 +109,14 @@ func main() {
 		link := table.GetCell(row, 6)
 		curColor := torrent.Color
 
-		if curColor == tcell.ColorGreen || curColor == tcell.ColorWhite {
-			torrent.Color = tcell.ColorBlue
-
-			if !sliceHas(markedTorrents, link.Text) {
-				markedTorrents = append(markedTorrents, MarkedTorrent{Name: torrent.Text, Link: link.Text})
-			}
-		}
-
-		if curColor == tcell.ColorBlue {
-			if strings.Contains(torrent.Text, "trusted torrent") {
-				torrent.Color = tcell.ColorGreen
-			} else {
-				torrent.Color = tcell.ColorWhite
-			}
-
-			markedTorrents = remove(markedTorrents, link.Text)
-		}
+		MarkTorrent(torrent, link, curColor, row)
+		UnmarkTorrent(torrent, link, curColor)
 	})
 
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlD {
 			downloadTorrents(markedTorrents)
-			rows := table.GetRowCount()
-			for i := 0; i < rows; i++ {
-				torrent := table.GetCell(i, 5)
-				link := table.GetCell(i, 6)
-
-				if torrent.Color == tcell.ColorBlue {
-					if strings.Contains(torrent.Text, "trusted torrent") {
-						torrent.Color = tcell.ColorGreen
-					} else {
-						torrent.Color = tcell.ColorWhite
-					}
-
-					markedTorrents = remove(markedTorrents, link.Text)
-				}
-			}
+			UnmarkAll(table)
 		}
 
 		return event
@@ -201,33 +174,32 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 		Filter:   f,
 	}
 
-	t, err := nyaa.Search(opt)
+	res, err := nyaa.Search(opt)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	if len(t) == 0 {
+	if len(res) == 0 {
 		return "No results found"
 	}
 
 	initialLayout := "Mon, 02 Jan 2006 15:04:05 -0700"
 	dateLayout := "2006-01-02"
 
-	for _, v := range t {
+	for _, v := range res {
 		t, _ := time.Parse(initialLayout, v.Date)
 		date := t.Format(dateLayout)
 
-		name := ""
-		a := strings.Split(v.Name, "")
-		for i, v := range a {
+		nameSlice := strings.Split(v.Name, "")
+		for i, v := range nameSlice { // chars like: "[" & "]" conflict with tcell or tview rendering process
 			if v == "[" {
-				a[i] = "("
+				nameSlice[i] = "("
 			} else if v == "]" {
-				a[i] = ")"
+				nameSlice[i] = ")"
 			}
 		}
-		str := strings.Join(a, "")
-		name = str
+		nameStr := strings.Join(nameSlice, "")
+		name := nameStr
 
 		isTrusted := ""
 		if v.IsTrusted == "Yes" {
@@ -241,47 +213,28 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 		}
 
 		torrents += "{}" + v.Link
-
 		torrents += "\n"
 	}
 
 	return torrents
 }
 
-func sliceHas(s []MarkedTorrent, e string) bool {
-	for _, v := range s {
-		if v.Link == e {
-			return true
-		}
-	}
-	return false
-}
-
-func remove(s []MarkedTorrent, e string) []MarkedTorrent {
-	for i, v := range s {
-		if v.Link == e {
-			return append(s[:i], s[i+1:]...)
-		}
-	}
-	return s
-}
-
 func downloadTorrents(torrents []MarkedTorrent) error {
 	for _, v := range torrents {
-		res, err := http.Get(v.Link)
+		res, err := http.Get(v.LinkCell.Text)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer res.Body.Close()
 
 		var fileName string
-		if len(v.Name) > 200 {
-			fileName = v.Name[:200]
+		if len(v.TorrentCell.Text) > 200 {
+			fileName = v.TorrentCell.Text[:200]
 		} else {
-			fileName = v.Name
+			fileName = v.TorrentCell.Text
 		}
 
-		out, err := os.Create(string(fileName) + ".torrent")
+		out, err := os.Create(fileName + ".torrent")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -296,7 +249,72 @@ func downloadTorrents(torrents []MarkedTorrent) error {
 	return nil
 }
 
+func MarkTorrent(torrent *tview.TableCell, link *tview.TableCell, curColor tcell.Color, row int) {
+	if curColor == tcell.ColorGreen || curColor == tcell.ColorWhite {
+		torrent.Color = tcell.ColorBlue
+
+		if !sliceHas(markedTorrents, link.Text) {
+			markedTorrents = append(markedTorrents, MarkedTorrent{
+				TorrentCell: torrent,
+				LinkCell:    link,
+				Row:         row,
+				Color:       curColor,
+			})
+		}
+	}
+}
+
+func UnmarkTorrent(torrent *tview.TableCell, link *tview.TableCell, curColor tcell.Color) {
+	if curColor == tcell.ColorBlue {
+		if strings.Contains(torrent.Text, "trusted torrent") {
+			torrent.Color = tcell.ColorGreen
+		} else {
+			torrent.Color = tcell.ColorWhite
+		}
+
+		markedTorrents = remove(markedTorrents, link.Text)
+	}
+}
+
+func UnmarkAll(table *tview.Table) {
+	rows := table.GetRowCount()
+	for i := 0; i < rows; i++ {
+		torrent := table.GetCell(i, 5)
+		link := table.GetCell(i, 6)
+
+		if torrent.Color == tcell.ColorBlue {
+			if strings.Contains(torrent.Text, "trusted torrent") {
+				torrent.Color = tcell.ColorGreen
+			} else {
+				torrent.Color = tcell.ColorWhite
+			}
+
+			markedTorrents = remove(markedTorrents, link.Text)
+		}
+	}
+}
+
+func sliceHas(s []MarkedTorrent, item string) bool {
+	for _, v := range s {
+		if v.LinkCell.Text == item {
+			return true
+		}
+	}
+	return false
+}
+
+func remove(s []MarkedTorrent, item string) []MarkedTorrent {
+	for i, v := range s {
+		if v.LinkCell.Text == item {
+			return append(s[:i], s[i+1:]...)
+		}
+	}
+	return s
+}
+
 type MarkedTorrent struct {
-	Name string
-	Link string
+	Row         int
+	TorrentCell *tview.TableCell
+	LinkCell    *tview.TableCell
+	Color       tcell.Color
 }

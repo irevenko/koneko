@@ -1,11 +1,11 @@
 # 🐈🌐 koneko
- Terminal client for nyaa.si. Download Anime, Manga, Music and more
-
+ Terminal client for nyaa.si. Download Anime, Literature, Audio, Live Action, Pictures, Software
 
 # ToDo
-- [ ] command nyaa && sukebei (to select provider)
+- [ ] Handle "/" char
+- [ ] open in other app and hide torrent link
 - [ ] Add bottom panel with help, bookmars, history (another screen)
-- [ ] Download torrent or open in other app (mark torrents like in gero) and hide torrent link
-- [ ] Simulate nyaa.si as much as possible
-    * [ ] Colors
+- [ ] Simulate nyaa.si as much as possible (test all TUI edge cases)
+    * [ ] Colors, Categories
     * [ ] Torrent description, comments, files
+- [ ] command nyaa && sukebei (to select provider)
