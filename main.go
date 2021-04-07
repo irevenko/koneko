@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 	"time"
 
@@ -15,6 +17,8 @@ import (
 )
 
 var app = tview.NewApplication()
+
+var nyaaDownload = "https://nyaa.si/download/"
 
 var query = ""
 var category = 0
@@ -115,10 +119,19 @@ func main() {
 
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlD {
-			downloadTorrents(markedTorrents)
+			_, err := downloadTorrents(markedTorrents)
+			if err != nil {
+				log.Fatal(err)
+			}
 			UnmarkAll(table)
 		}
-
+		if event.Key() == tcell.KeyCtrlO {
+			err := openTorrents()
+			if err != nil {
+				log.Fatal(err)
+			}
+			UnmarkAll(table)
+		}
 		return event
 	})
 
@@ -192,10 +205,14 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 
 		nameSlice := strings.Split(v.Name, "")
 		for i, v := range nameSlice { // chars like: "[" & "]" conflict with tcell or tview rendering process
-			if v == "[" {
+			if v == "[" || v == "<" { // windows file name handling
 				nameSlice[i] = "("
-			} else if v == "]" {
+			} else if v == "]" || v == ">" {
 				nameSlice[i] = ")"
+			} else if v == "/" || v == "\\" || v == "|" {
+				nameSlice[i] = "#"
+			} else if v == ":" || v == "*" || v == "?" || v == `"` {
+				nameSlice[i] = " "
 			}
 		}
 		nameStr := strings.Join(nameSlice, "")
@@ -212,16 +229,20 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 			torrents += " (trusted torrent)"
 		}
 
-		torrents += "{}" + v.Link
+		link := strings.Split(v.Link, "download/")
+		torrentID := strings.Split(link[1], ".torrent")
+		torrents += "{}" + torrentID[0]
 		torrents += "\n"
 	}
 
 	return torrents
 }
 
-func downloadTorrents(torrents []MarkedTorrent) error {
+func downloadTorrents(torrents []MarkedTorrent) ([]string, error) {
+	var names []string
+
 	for _, v := range torrents {
-		res, err := http.Get(v.LinkCell.Text)
+		res, err := http.Get(nyaaDownload + v.LinkCell.Text + ".torrent")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -238,6 +259,7 @@ func downloadTorrents(torrents []MarkedTorrent) error {
 		if err != nil {
 			log.Fatal(err)
 		}
+		names = append(names, out.Name())
 		defer out.Close()
 
 		_, err = io.Copy(out, res.Body)
@@ -245,7 +267,23 @@ func downloadTorrents(torrents []MarkedTorrent) error {
 			log.Fatal(err)
 		}
 	}
+	return names, nil
+}
 
+func openTorrents() error {
+	torrents, err := downloadTorrents(markedTorrents)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, v := range torrents {
+		if runtime.GOOS == "windows" {
+			exec.Command("start", v).Start()
+		} else if runtime.GOOS == "linux" {
+			exec.Command("xdg-open", v).Start()
+		} else if runtime.GOOS == "darwin" {
+			exec.Command("open", v).Start()
+		}
+	}
 	return nil
 }
 
