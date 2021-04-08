@@ -109,8 +109,8 @@ func main() {
 	})
 
 	table.SetSelectedFunc(func(row int, column int) {
-		torrent := table.GetCell(row, 5)
-		link := table.GetCell(row, 6)
+		torrent := table.GetCell(row, 6)
+		link := table.GetCell(row, 7)
 		curColor := torrent.Color
 
 		MarkTorrent(torrent, link, curColor, row)
@@ -157,12 +157,14 @@ func setTableData(table *tview.Table, data string) {
 			} else if column == 2 {
 				textColor = tcell.ColorRed
 			} else if column == 3 {
-				textColor = tcell.ColorPurple
+				textColor = tcell.ColorLightPink
 			} else if column == 4 {
+				textColor = tcell.ColorYellowGreen
+			} else if column == 5 {
 				textColor = tcell.ColorLightCyan
 			}
 
-			if strings.Contains(line, "(trusted torrent)") && column == 5 {
+			if strings.Contains(line, "(trusted torrent)") && column == 6 {
 				textColor = tcell.ColorGreen
 			}
 
@@ -205,7 +207,7 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 
 		nameSlice := strings.Split(v.Name, "")
 		for i, v := range nameSlice { // chars like: "[" & "]" conflict with tcell or tview rendering process
-			if v == "[" || v == "<" { // windows file name handling
+			if v == "[" || v == "<" { // file name handling
 				nameSlice[i] = "("
 			} else if v == "]" || v == ">" {
 				nameSlice[i] = ")"
@@ -223,7 +225,9 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 			isTrusted = v.IsTrusted
 		}
 
-		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + name
+		category := h.ConvertTableCategory(v.Category)
+
+		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + category + "{}" + name
 
 		if isTrusted == "Yes" {
 			torrents += " (trusted torrent)"
@@ -317,8 +321,8 @@ func UnmarkTorrent(torrent *tview.TableCell, link *tview.TableCell, curColor tce
 func UnmarkAll(table *tview.Table) {
 	rows := table.GetRowCount()
 	for i := 0; i < rows; i++ {
-		torrent := table.GetCell(i, 5)
-		link := table.GetCell(i, 6)
+		torrent := table.GetCell(i, 6)
+		link := table.GetCell(i, 7)
 
 		if torrent.Color == tcell.ColorBlue {
 			if strings.Contains(torrent.Text, "trusted torrent") {

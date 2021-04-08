@@ -86,3 +86,44 @@ func ConvertFilter(idx int) string {
 		return ""
 	}
 }
+
+func ConvertTableCategory(category string) string {
+	switch category {
+	case "Anime - Anime Music Video":
+		return "Anime-AMV"
+	case "Anime - English-translated":
+		return "Anime-ENG"
+	case "Anime - Non-English-translated":
+		return "Anime-Non-ENG"
+	case "Anime - Raw":
+		return "Anime-Raw"
+	case "Audio - Lossless":
+		return "Audio-Lossless"
+	case "Audio - Lossy":
+		return "Audio-Lossy"
+	case "Literature - English-translated":
+		return "Literature-ENG"
+	case "Literature - Non-English-translated":
+		return "Literature-Non-ENG"
+	case "Literature - Raw":
+		return "Literature-Raw"
+	case "Live Action - English-translated":
+		return "Live-Act-ENG"
+	case "Live Action - Idol/Promotional Video":
+		return "Live-Act-Idol/Prom"
+	case "Live Action - Non-English-translated":
+		return "Live-Act-Non-ENG"
+	case "Live Action - Raw":
+		return "Live-Act-Raw"
+	case "Pictures - Graphics":
+		return "Pics-Graphics"
+	case "Pictures - Photos":
+		return "Pics-Photos"
+	case "Software - Applications":
+		return "Applications"
+	case "Software - Games":
+		return "Games"
+	default:
+		return ""
+	}
+}

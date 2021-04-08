@@ -17,9 +17,6 @@
 | all              | exit                     | <kbd>Ctrl</kbd> + <kbd>C</kbd>                     |
 
 # ToDo
-- [ ] open in other app (open marked torrents)
 - [ ] Add bottom panel with help, bookmars, history (another screen)
-- [ ] Simulate nyaa.si as much as possible (test all TUI edge cases)
-    * [ ] Colors, Categories
-    * [ ] Torrent description, comments, files
+- [ ] Torrent description, comments, files
 - [ ] command nyaa && sukebei (to select provider)
