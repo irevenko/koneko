@@ -86,6 +86,44 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 	return torrents
 }
 
+func fetchTorrentInfo(torrent string) string {
+	var info string
+
+	comms, err := nyaa.TorrentComments("https://nyaa.si/view/" + torrent)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	desc, err := nyaa.TorrentDescription("https://nyaa.si/view/" + torrent)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	files, err := nyaa.TorrentFiles("https://nyaa.si/view/" + torrent)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	info += "[#3fff33]Description:[white]\n"
+	info += desc
+
+	info += "\n\n[#2e64fe]Files:[white]\n"
+
+	for _, v := range files {
+		info += v + "\n"
+	}
+
+	info += "\n[#ffff00]Comments:[white]\n"
+
+	for _, v := range comms {
+		info += "[#ff3c33]User:[white] " + v.User + "\n"
+		info += "[#fc33ff]At:[white] " + v.Date + "\n"
+		info += v.Text + "\n\n"
+	}
+
+	return info
+}
+
 func downloadTorrents(torrents []t.MarkedTorrent, provider string) ([]string, error) {
 	var names []string
 

@@ -80,7 +80,7 @@ var sortOptions = []string{
 var HelpText = ` Keybindings
  Press ESC to switch back
 --------------------------------------------------------------------
-| [#2e64fe]panel[white]            | [#2efe2e]operation[white]                | [#ffff00]key[white]                |
+| panel            | operation                | key                |
 |------------------|--------------------------|--------------------|
 | search           | navigate                 | Tab / Shift + Tab  |
 | search           | focus results            | Esc                |
@@ -99,18 +99,20 @@ func Launch(provider string) {
 	pages := tview.NewPages()
 	app.SetRoot(pages, true).EnableMouse(true)
 
-	search := setupMainPage(pages, provider)
+	info := setupInfoPage(pages)
+	search := setupMainPage(pages, provider, info)
 	help := setupHelpPage(pages)
 
 	pages.AddPage("main", search, true, true)
 	pages.AddPage("help", help, true, true)
+	pages.AddPage("info", info, true, true)
 
 	pages.SwitchToPage("main")
 	app.SetFocus(search)
 	app.Run()
 }
 
-func setupMainPage(p *tview.Pages, provider string) *tview.Flex {
+func setupMainPage(p *tview.Pages, provider string, info *tview.TextView) *tview.Flex {
 	table := tview.NewTable().
 		SetSelectable(true, false)
 	table.SetBorder(true)
@@ -220,6 +222,11 @@ func setupMainPage(p *tview.Pages, provider string) *tview.Flex {
 		if event.Key() == tcell.KeyCtrlH {
 			p.SwitchToPage("help")
 		}
+		if event.Key() == tcell.KeyCtrlI && len(markedTorrents) == 1 {
+			i := fetchTorrentInfo(markedTorrents[0].LinkCell.Text)
+			info.SetText(i)
+			p.SwitchToPage("info")
+		}
 		return event
 	})
 
@@ -237,9 +244,39 @@ func setupHelpPage(p *tview.Pages) *tview.TextView {
 
 	go func() {
 		for _, word := range strings.Split(HelpText, " ") {
+			if word == "panel" {
+				word = "[#2e64fe]panel[white]"
+			}
+			if word == "operation" {
+				word = "[#2efe2e]operation[white]"
+			}
+			if word == "key" {
+				word = "[#ffff00]key[white]"
+			}
 			fmt.Fprintf(textView, "%s ", word)
 		}
 	}()
+
+	textView.SetBorder(true)
+
+	textView.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+		if event.Key() == tcell.KeyESC {
+			p.SwitchToPage("main")
+		}
+		return event
+	})
+
+	return textView
+}
+
+func setupInfoPage(p *tview.Pages) *tview.TextView {
+	textView := tview.NewTextView().
+		SetDynamicColors(true).
+		SetRegions(true).
+		SetWordWrap(true).
+		SetChangedFunc(func() {
+			app.Draw()
+		})
 
 	textView.SetBorder(true)
 
@@ -267,9 +304,9 @@ func setTableData(table *tview.Table, data string) {
 			} else if column == 2 {
 				textColor = tcell.ColorRed
 			} else if column == 3 {
-				textColor = tcell.ColorLightPink
+				textColor = tcell.ColorMediumPurple
 			} else if column == 4 {
-				textColor = tcell.ColorYellowGreen
+				textColor = tcell.ColorLightPink
 			} else if column == 5 {
 				textColor = tcell.ColorLightCyan
 			}
