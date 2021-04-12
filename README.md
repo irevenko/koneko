@@ -1,5 +1,5 @@
-# 🐈🌐 koneko - TUI Client for nyaa.si 
- > Terminal client for nyaa.si. Download Anime, Literature, Audio, Live Action, Pictures, Software
+# koneko - TUI Client for nyaa.si 🐈🌐
+ > Download Anime, Literature, Audio, Live Action, Pictures, Software
 
 <p align="center"> Data -  <a href="https://github.com/irevenko/go-nyaa">go-nyaa</a> 
 TUI - <a href="https://github.com/rivo/tview">tview</a>  </p> <br>
@@ -9,14 +9,14 @@ TUI - <a href="https://github.com/rivo/tview">tview</a>  </p> <br>
 ```go get -u github.com/irevenko/koneko``` <br>
 
 # About koneko ℹ️
-Supports ```UNIX``` and ```windows``` <br> <br>
-Could be faster than the  website because you can mark multiple torrents and download & open them all at once <br>
+✅ Supports ```UNIX``` and ```windows``` <br> <br>
+🚀 Could be faster than the  website because you can mark multiple torrents and download & open them all at once <br>
 <img src="./_assets/marked.png">
 
 # Usage 🔬
 ```koneko <PROVIDER>``` - ```nyaa``` or ```sukebei``` <br> 
 
-## Keybindings
+## Keybindings 🎹
 | panel            | operation                | key                                                |
 |------------------|--------------------------|----------------------------------------------------|
 | search           | navigate                 | <kbd>Tab</kbd> / <kbd>Shift</kbd> + <kbd>Tab</kbd> |
