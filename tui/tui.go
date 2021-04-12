@@ -87,11 +87,13 @@ var HelpText = ` Keybindings
 | results          | mark torrent             | Enter              |
 | results          | download marked torrents | Ctrl + D           |
 | results          | open marked torrents     | Ctrl + O           |
+| results          | get marked torrent info  | Ctrl + I           |
 | results          | move down                | j / ↓              |
 | results          | move up                  | k / ↑              |
 | results          | move to the top          | g / home           |
 | results          | move to the bottom       | G / end            |
 | results          | focus search             | Esc / Tab          |
+| all              | open help                | Ctrl + H           |
 | all              | exit                     | Ctrl + C           |
 --------------------------------------------------------------------`
 

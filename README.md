@@ -3,11 +3,15 @@
 
 <p align="center"> Data -  <a href="https://github.com/irevenko/go-nyaa">go-nyaa</a> 
 TUI - <a href="https://github.com/rivo/tview">tview</a>  </p> <br>
-<img src="preview.png">
+<img src="_assets/preview.gif">
 
 # Installation 🔨
 ```go get -u github.com/irevenko/koneko``` <br>
-Supports ```UNIX``` and ```windows```
+
+# About koneko ℹ️
+Supports ```UNIX``` and ```windows``` <br> <br>
+Could be faster than the  website because you can mark multiple torrents and download & open them all at once <br>
+<img src="./_assets/marked.png">
 
 # Usage 🔬
 ```koneko <PROVIDER>``` - ```nyaa``` or ```sukebei``` <br> 
@@ -20,7 +24,7 @@ Supports ```UNIX``` and ```windows```
 | results          | mark torrent             | <kbd>Enter</kbd>                                   |
 | results          | download marked torrents | <kbd>Ctrl</kbd> + <kbd>D</kbd>                     |
 | results          | open marked torrents     | <kbd>Ctrl</kbd> + <kbd>O</kbd>                     |
-| results          | get torrent info         | <kbd>Ctrl</kbd> + <kbd>I</kbd>                     |
+| results          | get marked torrent info  | <kbd>Ctrl</kbd> + <kbd>I</kbd>                     |
 | results          | move down                | <kbd>j</kbd> / <kbd>↓</kbd>                        |
 | results          | move up                  | <kbd>k</kbd> / <kbd>↑</kbd>                        |
 | results          | move to the top          | <kbd>g</kbd> / <kbd>home</kbd>                     |
