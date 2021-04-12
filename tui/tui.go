@@ -14,6 +14,7 @@ import (
 var app = tview.NewApplication()
 
 var nyaaDownload = "https://nyaa.si/download/"
+var sukebeiDownload = "https://sukebei.nyaa.si/download/"
 
 var query = ""
 var category = 0
@@ -48,6 +49,19 @@ var nyaaCategories = []string{
 	"- Games",
 }
 
+var sukebeiCategories = []string{
+	"All",
+	"Art",
+	"- Anime",
+	"- Doujinshi",
+	"- Games",
+	"- Manga",
+	"- Pictures",
+	"Real Life",
+	"- Photobooks and Pictures",
+	"- Videos",
+}
+
 var filters = []string{
 	"No filter",
 	"No remakes",
@@ -63,11 +77,29 @@ var sortOptions = []string{
 	"Comments",
 }
 
-func Launch() {
+var HelpText = ` Keybindings
+ Press ESC to switch back
+--------------------------------------------------------------------
+| [#2e64fe]panel[white]            | [#2efe2e]operation[white]                | [#ffff00]key[white]                |
+|------------------|--------------------------|--------------------|
+| search           | navigate                 | Tab / Shift + Tab  |
+| search           | focus results            | Esc                |
+| results          | mark torrent             | Enter              |
+| results          | download marked torrents | Ctrl + D           |
+| results          | open marked torrents     | Ctrl + O           |
+| results          | move down                | j / ↓              |
+| results          | move up                  | k / ↑              |
+| results          | move to the top          | g / home           |
+| results          | move to the bottom       | G / end            |
+| results          | focus search             | Esc / Tab          |
+| all              | exit                     | Ctrl + C           |
+--------------------------------------------------------------------`
+
+func Launch(provider string) {
 	pages := tview.NewPages()
 	app.SetRoot(pages, true).EnableMouse(true)
 
-	search := setupMainPage(pages)
+	search := setupMainPage(pages, provider)
 	help := setupHelpPage(pages)
 
 	pages.AddPage("main", search, true, true)
@@ -78,30 +110,57 @@ func Launch() {
 	app.Run()
 }
 
-func setupMainPage(p *tview.Pages) *tview.Flex {
+func setupMainPage(p *tview.Pages, provider string) *tview.Flex {
 	table := tview.NewTable().
 		SetSelectable(true, false)
-	table.SetBorder(true).SetTitle("nyaa.si")
+	table.SetBorder(true)
+
+	if provider == "nyaa" {
+		table.SetTitle("nyaa.si")
+	} else if provider == "sukebei" {
+		table.SetTitle("sukebei.nyaa.si")
+	}
 
 	form := tview.NewForm().
 		AddInputField("Query", "", 24, nil, func(text string) {
 			query = text
-		}).
-		AddDropDown("Category", nyaaCategories, 0, func(option string, optionIndex int) {
+		})
+	if provider == "nyaa" {
+		form.AddDropDown("Category", nyaaCategories, 0, func(option string, optionIndex int) {
 			category = optionIndex
-		}).
-		AddDropDown("Filter", filters, 0, func(option string, optionIndex int) {
-			filter = optionIndex
-		}).
+		})
+	}
+	if provider == "sukebei" {
+		form.AddDropDown("Category", sukebeiCategories, 0, func(option string, optionIndex int) {
+			category = optionIndex
+		})
+	}
+	form.AddDropDown("Filter", filters, 0, func(option string, optionIndex int) {
+		filter = optionIndex
+	}).
 		AddDropDown("Sort By", sortOptions, 0, func(option string, optionIndex int) {
 			sortBy = optionIndex
 		}).
 		AddButton("Search", func() {
 			UnmarkAll(table)
-			c := h.ConvertCategory(category)
+			c := ""
+			torrents := ""
 			s := h.ConvertSort(sortBy)
 			f := h.ConvertFilter(filter)
-			torrents := fetchTorrents("nyaa", query, c, s, f)
+
+			if provider == "nyaa" {
+				c = h.ConvertNyaaCategory(category)
+			} else if provider == "sukebei" {
+				c = h.ConvertSukebeiCategory(category)
+			}
+
+			if provider == "nyaa" {
+				torrents = fetchTorrents("nyaa", query, c, s, f)
+			}
+			if provider == "sukebei" {
+				torrents = fetchTorrents("sukebei", query, c, s, f)
+			}
+
 			setTableData(table, torrents[:len(torrents)-1]) // remove last \n
 			app.SetFocus(table)
 			table.ScrollToBeginning()
@@ -129,14 +188,14 @@ func setupMainPage(p *tview.Pages) *tview.Flex {
 
 	table.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlD {
-			_, err := downloadTorrents(markedTorrents)
+			_, err := downloadTorrents(markedTorrents, provider)
 			if err != nil {
 				log.Fatal(err)
 			}
 			UnmarkAll(table)
 		}
 		if event.Key() == tcell.KeyCtrlO {
-			err := openTorrents()
+			err := openTorrents(provider)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -168,23 +227,6 @@ func setupMainPage(p *tview.Pages) *tview.Flex {
 }
 
 func setupHelpPage(p *tview.Pages) *tview.TextView {
-	helpText := ` Keybindings
- --------------------------------------------------------------------
- | [#2e64fe]panel[white]            | [#2efe2e]operation[white]                | [#ffff00]key[white]                |
- |------------------|--------------------------|--------------------|
- | search           | navigate                 | Tab / Shift + Tab  |
- | search           | focus results            | Esc                |
- | results          | mark torrent             | Enter              |
- | results          | download marked torrents | Ctrl + D           |
- | results          | open marked torrents     | Ctrl + O           |
- | results          | move down                | j / ↓              |
- | results          | move up                  | k / ↑              |
- | results          | move to the top          | g / home           |
- | results          | move to the bottom       | G / end            |
- | results          | focus search             | Esc / Tab          |
- | all              | exit                     | Ctrl + C           |
- --------------------------------------------------------------------`
-
 	textView := tview.NewTextView().
 		SetDynamicColors(true).
 		SetRegions(true).
@@ -194,7 +236,7 @@ func setupHelpPage(p *tview.Pages) *tview.TextView {
 		})
 
 	go func() {
-		for _, word := range strings.Split(helpText, " ") {
+		for _, word := range strings.Split(HelpText, " ") {
 			fmt.Fprintf(textView, "%s ", word)
 		}
 	}()

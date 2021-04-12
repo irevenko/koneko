@@ -64,7 +64,12 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 			isTrusted = v.IsTrusted
 		}
 
-		category := h.ConvertTableCategory(v.Category)
+		category := ""
+		if p == "nyaa" {
+			category = h.ConvertTableNyaa(v.Category)
+		} else if p == "sukebei" {
+			category = h.ConvertTableSukebei(v.Category)
+		}
 
 		torrents += v.Downloads + "{}" + v.Seeders + "{}" + v.Leechers + "{}" + v.Size + "{}" + date + "{}" + category + "{}" + name
 
@@ -81,13 +86,19 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 	return torrents
 }
 
-func downloadTorrents(torrents []t.MarkedTorrent) ([]string, error) {
+func downloadTorrents(torrents []t.MarkedTorrent, provider string) ([]string, error) {
 	var names []string
 
 	for _, v := range torrents {
-		res, err := http.Get(nyaaDownload + v.LinkCell.Text + ".torrent")
-		if err != nil {
-			log.Fatal(err)
+		var res *http.Response
+		var rErr error
+		if provider == "nyaa" {
+			res, rErr = http.Get(nyaaDownload + v.LinkCell.Text + ".torrent")
+		} else if provider == "sukebei" {
+			res, rErr = http.Get(sukebeiDownload + v.LinkCell.Text + ".torrent")
+		}
+		if rErr != nil {
+			log.Fatal(rErr)
 		}
 		defer res.Body.Close()
 
@@ -113,8 +124,8 @@ func downloadTorrents(torrents []t.MarkedTorrent) ([]string, error) {
 	return names, nil
 }
 
-func openTorrents() error {
-	torrents, err := downloadTorrents(markedTorrents)
+func openTorrents(provider string) error {
+	torrents, err := downloadTorrents(markedTorrents, provider)
 	if err != nil {
 		log.Fatal(err)
 	}

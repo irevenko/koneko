@@ -18,7 +18,6 @@
 | all              | exit                     | <kbd>Ctrl</kbd> + <kbd>C</kbd>                     |
 
 # ToDo
-- [ ] command nyaa && sukebei (to select provider)
 - [ ] Change color theme
 - [ ] Add bookmars, history
 - [ ] Torrent description, comments, files

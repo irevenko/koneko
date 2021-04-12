@@ -1,6 +1,6 @@
 package helpers
 
-func ConvertCategory(idx int) string {
+func ConvertNyaaCategory(idx int) string {
 	switch idx {
 	case 0:
 		return "all"
@@ -55,6 +55,33 @@ func ConvertCategory(idx int) string {
 	}
 }
 
+func ConvertSukebeiCategory(idx int) string {
+	switch idx {
+	case 0:
+		return "all"
+	case 1:
+		return "art"
+	case 2:
+		return "art-anime"
+	case 3:
+		return "art-doujinshi"
+	case 4:
+		return "art-games"
+	case 5:
+		return "art-manga"
+	case 6:
+		return "art-pictures"
+	case 7:
+		return "real-life"
+	case 8:
+		return "real-life-photos"
+	case 9:
+		return "real-life-videos"
+	default:
+		return ""
+	}
+}
+
 func ConvertSort(idx int) string {
 	switch idx {
 	case 0:
@@ -87,7 +114,7 @@ func ConvertFilter(idx int) string {
 	}
 }
 
-func ConvertTableCategory(category string) string {
+func ConvertTableNyaa(category string) string {
 	switch category {
 	case "Anime - Anime Music Video":
 		return "Anime-AMV"
@@ -123,6 +150,27 @@ func ConvertTableCategory(category string) string {
 		return "Applications"
 	case "Software - Games":
 		return "Games"
+	default:
+		return ""
+	}
+}
+
+func ConvertTableSukebei(category string) string {
+	switch category {
+	case "Art - Anime":
+		return "Anime"
+	case "Art - Doujinshi":
+		return "Doujinshi"
+	case "Art - Games":
+		return "Games"
+	case "Art - Manga":
+		return "Manga"
+	case "Art - Pictures":
+		return "Art-Pictures"
+	case "Real Life - Photobooks and Pictures":
+		return "Real-Life-Pics"
+	case "Real Life - Videos":
+		return "Real-Life-Vids"
 	default:
 		return ""
 	}

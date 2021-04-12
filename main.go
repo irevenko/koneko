@@ -1,7 +1,17 @@
 package main
 
-import tui "github.com/irevenko/koneko/tui"
+import (
+	"fmt"
+	"os"
+
+	cmd "github.com/irevenko/koneko/cmd"
+)
 
 func main() {
-	tui.Launch()
+	cmd.AddCommands()
+
+	if err := cmd.RootCmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }
