@@ -9,8 +9,8 @@ TUI - <a href="https://github.com/rivo/tview">tview</a>  </p> <br>
 ```go get -u github.com/irevenko/koneko``` <br>
 
 # About koneko ℹ️
-✅ Supports ```UNIX``` and ```windows``` <br> <br>
-🚀 Could be faster than the  website because you can mark multiple torrents and download & open them all at once <br>
+- ✅ Supports ```UNIX``` and ```windows``` 
+- 🚀 Could be faster than the  website because you can mark multiple torrents and download & open them all at once <br>
 <img src="./_assets/marked.png">
 
 # Usage 🔬
