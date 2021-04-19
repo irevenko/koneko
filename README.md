@@ -1,8 +1,10 @@
 # koneko - TUI Client for nyaa.si 🐈🌐
- > Download Anime, Literature, Audio, Live Action, Pictures, Software
-
-<p align="center"> Data -  <a href="https://github.com/irevenko/go-nyaa">go-nyaa</a> 
-TUI - <a href="https://github.com/rivo/tview">tview</a>  </p> <br>
+ > Koneko, 子猫 - means <i>kitten</i> in Japanese (so it refers to nyaa.si name which is cat's meow)
+ 
+<p align="center"> 
+♻️ Download Anime, Literature, Audio, Live Action, Pictures, Software and more! <br>
+Data -  <a href="https://github.com/irevenko/go-nyaa">go-nyaa</a> TUI - <a href="https://github.com/rivo/tview">tview</a>  
+</p> <br>
 <img src="_assets/preview.gif">
 
 # Installation 🔨
