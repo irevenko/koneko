@@ -32,7 +32,7 @@ Data -  <a href="https://github.com/irevenko/go-nyaa">go-nyaa</a> TUI - <a href=
 | results          | move to the top          | <kbd>g</kbd> / <kbd>home</kbd>                     |
 | results          | move to the bottom       | <kbd>G</kbd> / <kbd>end</kbd>                      |
 | results          | focus search             | <kbd>Esc</kbd> / <kbd>Tab</kbd>                    |
-| all              | open help                | <kbd>Ctrl</kbd> + <kbd>H</kbd>                     |
+| all              | open help                | <kbd>Ctrl</kbd> + <kbd>J</kbd>                     |
 | all              | exit                     | <kbd>Ctrl</kbd> + <kbd>C</kbd>                     |
 
 # Contributing 🤝

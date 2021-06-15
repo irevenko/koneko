@@ -93,7 +93,7 @@ var HelpText = ` Keybindings
 | results          | move to the top          | g / home           |
 | results          | move to the bottom       | G / end            |
 | results          | focus search             | Esc / Tab          |
-| all              | open help                | Ctrl + H           |
+| all              | open help                | Ctrl + J           |
 | all              | exit                     | Ctrl + C           |
 --------------------------------------------------------------------`
 
@@ -212,7 +212,7 @@ func setupMainPage(p *tview.Pages, provider string, info *tview.TextView) *tview
 		SetWordWrap(true).
 		SetDynamicColors(true)
 
-	fmt.Fprintf(textView, "%s ", `[#3fff33]Help: Ctrl + H[white]`)
+	fmt.Fprintf(textView, "%s ", `[#3fff33]Help: Ctrl + J[white]`)
 	textView.SetBorder(true)
 
 	flex := tview.NewFlex().
@@ -221,7 +221,7 @@ func setupMainPage(p *tview.Pages, provider string, info *tview.TextView) *tview
 		AddItem(textView, 0, 1, true).SetDirection(tview.FlexRow)
 
 	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
-		if event.Key() == tcell.KeyCtrlH {
+		if event.Key() == tcell.KeyCtrlJ {
 			p.SwitchToPage("help")
 		}
 		if event.Key() == tcell.KeyCtrlI && len(markedTorrents) == 1 {
