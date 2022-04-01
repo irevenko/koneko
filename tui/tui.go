@@ -165,6 +165,7 @@ func setupMainPage(p *tview.Pages, provider string, info *tview.TextView) *tview
 				torrents = fetchTorrents("sukebei", query, c, s, f)
 			}
 
+			table.Clear()
 			setTableData(table, torrents[:len(torrents)-1]) // remove last \n
 			app.SetFocus(table)
 			table.ScrollToBeginning()

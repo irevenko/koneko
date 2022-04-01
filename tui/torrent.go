@@ -34,7 +34,7 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 	}
 
 	if len(res) == 0 {
-		return "No results found"
+		return "No results found\n"
 	}
 
 	initialLayout := "Mon, 02 Jan 2006 15:04:05 -0700"
