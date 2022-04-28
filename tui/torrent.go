@@ -41,6 +41,10 @@ func fetchTorrents(p string, q string, c string, s string, f string) string {
 	dateLayout := "2006-01-02"
 
 	for _, v := range res {
+		if !strings.Contains(v.Link, "download/") {
+			continue
+		}
+
 		t, _ := time.Parse(initialLayout, v.Date)
 		date := t.Format(dateLayout)
 
