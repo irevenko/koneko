@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
@@ -151,7 +152,12 @@ func downloadTorrents(torrents []t.MarkedTorrent, provider string) ([]string, er
 			fileName = v.TorrentCell.Text
 		}
 
-		out, err := os.Create(fileName + ".torrent")
+		var homeDir, hErr = os.UserHomeDir()
+		if hErr != nil {
+			log.Fatal(hErr)
+		}
+
+		out, err := os.Create(filepath.Join(homeDir, "Downloads", fileName) + ".torrent")
 		if err != nil {
 			log.Fatal(err)
 		}
