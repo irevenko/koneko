@@ -217,9 +217,9 @@ func setupMainPage(p *tview.Pages, provider string, info *tview.TextView) *tview
 	textView.SetBorder(true)
 
 	flex := tview.NewFlex().
-		AddItem(form, 0, 1, true).SetDirection(tview.FlexRow).
+		AddItem(form, 5, 1, true).SetDirection(tview.FlexRow).
 		AddItem(table, 0, 6, true).SetDirection(tview.FlexRow).
-		AddItem(textView, 0, 1, true).SetDirection(tview.FlexRow)
+		AddItem(textView, 3, 1, true).SetDirection(tview.FlexRow)
 
 	flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Key() == tcell.KeyCtrlJ {
